@@ -1,0 +1,374 @@
+<html>
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+      .chart {
+        width: 100%; 
+        min-height: 450px;
+      }
+      #slider .slider-selection {
+        background: #BABABA;
+      }
+    </style>
+    
+    <script type="text/javascript">
+
+      $(document).ready(function(){
+      
+        $("#slider").on('change', function(e){
+        
+            e.preventDefault();
+            
+            var days = $('#slider').val();
+            $.ajax({
+                type: 'post',
+                url: '/getit',
+                data: "days="+days,
+                dataType: 'text'
+            })
+            .done(function(data){
+                //console.log(data);
+                _data = JSON.parse(data);
+                //console.log(_data.values);
+                //google.charts.load('current', {'packages':['bar']});
+                google.charts.load('current', {'packages':['corechart']});
+                google.setOnLoadCallback(function() { drawChartAjax(_data.values); });
+            });
+        });
+      });
+
+       /*$(document).ready(function(){
+          $('#slider').slider({
+            formatter: function(value) {
+              return 'Current value: ' + value;
+            }
+          });
+      });*/
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function GetFormattedDate(myDate) {
+          var unix_timestamp=Date.parse(myDate);
+          var todayTime = new Date(unix_timestamp);
+          //console.log(todayTime);
+          var month = todayTime.getMonth() + 1;
+          var day = todayTime.getDate();
+          return month + "/" + day;
+      }
+
+      function isSunday(myDate) {
+          var unix_timestamp=Date.parse(myDate);
+          var todayTime = new Date(unix_timestamp);
+          if (todayTime.getDay()==0)
+            return true;
+          else 
+            return false;
+      }
+
+      function drawNuoviPositivi() {
+        var _array=[]
+        
+        _array.push(['Data','Nuovi Positivi',{role: 'style'}]);
+        <% for(let i=values.length-1;i>=0;i--) { %>;
+          var current=[];
+          if (isSunday("<%= values[i][0] %>"))
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][1] %>,'red'];
+          else
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][1] %>,'#07087C'];
+          _array.push(current);
+        <% } %>
+
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Nuovi Positivi',
+          bars: 'vertical',
+          height: 400,
+          colors: ['#07087C']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartNuoviPositivi'));
+        chart.draw(data, options);
+      }
+
+      function drawNuoviPositiviAjax(values) {
+        var _array=[]
+        _array.push(['Data','Nuovi Positivi',{role: 'style'}]);
+        for(let i=values.length-1;i>=0;i--) { 
+          var current=[];
+          if (isSunday(values[i][0]))
+            current=[GetFormattedDate(values[i][0]),values[i][1],'red'];
+          else
+            current=[GetFormattedDate(values[i][0]),values[i][1],'#07087C'];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          chart: {
+            title: 'Covid Daily',
+            subtitle: 'Data, Nuovi Positivi'
+          },
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#07087C']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartNuoviPositivi'));
+        chart.draw(data,options);
+      }
+
+      function drawRicoverati() {
+        var _array=[]
+        _array.push(['Data','Ricoverati',{role: 'style'}]);
+        <% for(let i=values.length-1;i>=0;i--) { %>;
+          var current=[];
+          if (isSunday("<%= values[i][0] %>"))
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][5] %>,'red'];
+          else
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][5] %>,'#067638'];
+          _array.push(current);
+        <% } %>
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Ricoverati',
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#067638']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartRicoverati'));
+        chart.draw(data, options);
+      }
+
+      function drawRicoveratiAjax(values) {
+        var _array=[]
+        _array.push(['Data','Ricoverati',{role: 'style'}]);
+        for(let i=values.length-1;i>=0;i--) { 
+          if (isSunday(values[i][0]))
+            current=[GetFormattedDate(values[i][0]),values[i][5],'red'];
+          else
+            current=[GetFormattedDate(values[i][0]),values[i][5],'#067638'];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Ricoverati',
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#067638']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartRicoverati'));
+        chart.draw(data, options);
+      }
+
+      function drawDeceduti() {
+        var _array=[]
+        _array.push(['Data','Deceduti',{role: 'style'}]);
+        <% for(let i=values.length-1;i>=0;i--) { %>;
+          var current=[];
+          if (isSunday("<%= values[i][0] %>"))
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][2] %>,'red'];
+          else
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][2] %>,'#790A48'];
+          _array.push(current);
+        <% } %>
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Deceduti',
+          bars: 'vertical',
+          height: 400,
+          colors: ['#790A48']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartDeceduti'));
+        chart.draw(data, options);
+      }
+
+      function drawDecedutiAjax(values) {
+        var _array=[]
+        _array.push(['Data','Deceduti',{role: 'style'}]);
+        for(let i=values.length-1;i>=0;i--) {
+          if (isSunday(values[i][0]))
+            current=[GetFormattedDate(values[i][0]),values[i][2],'red'];
+          else
+            current=[GetFormattedDate(values[i][0]),values[i][2],'#790A48'];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Deceduti',
+          bars: 'vertical',
+          height: 400,
+          colors: ['#790A48']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartDeceduti'));
+        chart.draw(data,options);
+      }
+
+      function drawTerapiaIntensiva() {
+        var _array=[]
+        _array.push(['Data','Terapia Intensiva',{role: 'style'}]);
+        <% for(let i=values.length-1;i>=0;i--) { %>;
+          var current=[];
+          if (isSunday("<%= values[i][0] %>"))
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][3] %>,'red'];
+          else
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][3] %>,'grey'];
+          _array.push(current);
+        <% } %>
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Terapia Intensiva',
+          bars: 'vertical',
+          height: 400,
+          colors: ['grey']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartTerapiaIntensiva'));
+        chart.draw(data, options);
+      }
+
+      function drawTerapiaIntensivaAjax(values) {
+        var _array=[]
+        _array.push(['Data','Terapia Intensiva',{role: 'style'}]);
+        for(let i=values.length-1;i>=0;i--) {
+          if (isSunday(values[i][0]))
+            current=[GetFormattedDate(values[i][0]),values[i][3],'red'];
+          else
+            current=[GetFormattedDate(values[i][0]),values[i][3],'grey'];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Terapia Intensiva',
+          bars: 'vertical',
+          height: 400,
+          colors: ['grey']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartTerapiaIntensiva'));
+        chart.draw(data,options);
+      }
+
+      function drawTamponi() {
+        var _array=[]
+        _array.push(['Data','Tamponi',{role: 'style'}]);
+        <% for(let i=values.length-1;i>=0;i--) { %>;
+          var current=[];
+          if (isSunday("<%= values[i][0] %>"))
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][4] %>,'red'];
+          else
+            current=[GetFormattedDate("<%= values[i][0] %>"),<%= values[i][4] %>,'#399FD1'];
+          _array.push(current);
+        <% } %>
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Tamponi',
+          bars: 'vertical',
+          height: 400,
+          colors: ['#399FD1']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartTamponi'));
+        chart.draw(data, options);
+      }
+
+      function drawTamponiAjax(values) {
+        var _array=[]
+        _array.push(['Data','Tamponi',{role: 'style'}]);
+        for(let i=values.length-1;i>=0;i--) {
+          if (isSunday(values[i][0]))
+            current=[GetFormattedDate(values[i][0]),values[i][4],'red'];
+          else
+            current=[GetFormattedDate(values[i][0]),values[i][4],'#399FD1'];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          title: 'Covid Daily - Tamponi',
+          bars: 'vertical',
+          height: 400,
+          colors: ['#399FD1']
+        };
+        
+        var chart = new google.visualization.ColumnChart(document.getElementById('chartTamponi'));
+        chart.draw(data, options);
+      }
+
+      function drawChart() {
+
+        drawNuoviPositivi();
+        drawDeceduti();
+        drawTerapiaIntensiva();
+        drawTamponi();
+        drawRicoverati();
+      }
+
+      function drawChartAjax(values) {
+
+        drawNuoviPositiviAjax(values);
+        drawDecedutiAjax(values);
+        drawTerapiaIntensivaAjax(values);
+        drawTamponiAjax(values);
+        drawRicoveratiAjax(values);
+      }
+
+      function updateTextInput(val) {
+          document.getElementById('slider_label').innerHTML=val;
+        }
+
+    </script>
+  </head>
+  <body>
+    
+    <!--<div id="chartNuoviPositivi" style="width: 900px; height: 500px;"></div>
+    <div id="chartDeceduti" style="width: 900px; height: 500px;"></div>
+    <div id="chartTerapiaIntensiva" style="width: 900px; height: 500px;"></div>
+    <div id="chartTamponi" style="width: 900px; height: 500px;"></div>-->
+
+    <label for="slider">Days of analysis</label>
+    <input id="slider" type="range" min="0" max="100" step="1" value="10" onchange="updateTextInput(this.value);" />
+    <label id="slider_label">10</label>
+    <hr>
+
+    <div id="chartNuoviPositivi" class="chart"></div>
+    <div id="chartDeceduti" class="chart"></div>
+    <div id="chartTerapiaIntensiva" class="chart"></div>
+    <div id="chartTamponi" class="chart"></div>
+    <div id="chartRicoverati" class="chart"></div>
+  </body>
+</html>

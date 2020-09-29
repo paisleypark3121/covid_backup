@@ -1,0 +1,146 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+      .chart {
+        width: 100%; 
+        min-height: 450px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      
+      function GetFormattedDate(myDate) {
+          var unix_timestamp=Date.parse(myDate);
+          var todayTime = new Date(unix_timestamp);
+          console.log(todayTime);
+          var month = todayTime.getMonth() + 1;
+          var day = todayTime.getDate();
+          return month + "/" + day;
+      }
+
+      
+      function drawDeath(country,values) {
+        var _array=[]
+        _array.push(['Data','New Deaths']);
+        for(let i=values.length-1;i>=0;i--) {
+          var current=[GetFormattedDate(values[i][0]), values[i][2]];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          chart: {
+            title: 'Covid Daily '+country,
+            subtitle: 'Data, New Deaths'
+          },
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#1b9e77', '#ababab']
+        };
+        
+        var chart = new google.charts.Bar(document.getElementById('chartDeath'));
+
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+      }
+
+      function drawCases(country,values) {
+        var _array=[]
+        _array.push(['Data','New Cases']);
+        for(let i=values.length-1;i>=0;i--) {
+          var current=[GetFormattedDate(values[i][0]), values[i][1]];
+          _array.push(current);
+        }
+        //console.log(_array);
+        var data = google.visualization.arrayToDataTable(_array);
+
+        var options = {
+          chart: {
+            title: 'Covid Daily '+country,
+            subtitle: 'Data, New Cases'
+          },
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#d95f02']
+        };
+        
+        var chart = new google.charts.Bar(document.getElementById('chartCases'));
+
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+      }
+
+      function drawChart(country,values) {
+        //drawData(country,values);
+        drawDeath(country,values);
+        drawCases(country,values);
+      }
+    </script>
+
+    <script type="text/javascript">
+
+      $(document).ready(function(){
+      
+        $("#countries").on('submit', function(e){
+        
+            e.preventDefault();
+            var data = $('#country').val();
+            var days = $('#days').val();
+            //alert("data: "+data);
+            $.ajax({
+                type: 'post',
+                url: '/getfull',
+                data: "country="+data+"&days="+days,
+                dataType: 'text'
+            })
+            .done(function(data){
+                console.log(data);
+                _data = JSON.parse(data);
+                console.log(_data.values);
+                google.charts.load('current', {'packages':['bar']});
+                google.setOnLoadCallback(function() { drawChart(_data.country,_data.values); });
+            });
+        });
+    });
+    </script>
+  </head>
+  <body>
+
+    <h4>Countries</h4>
+    <form class="form-group" id="countries" method="post">
+      <div class="form-group">
+      <select class="form-control" id="country" name="country">
+      <% for (var i = 0; i < list.length; i++) { %>
+          <option value=<%= list[i][0] %>>
+            <%= list[i][1] %>
+          </option>
+          <% } %>
+      </select>
+      </form>
+      <div class="form-group">
+      <!--<label for="days">days</label>-->
+      <input class="form-control" type="number" id="days" placeholder="type number of days">
+      </div>
+      <input class="btn btn-primary" type="submit" value="invia">
+    </form>
+
+    <hr>
+
+    <!--<div id="chartDeath" style="width: 900px; height: 500px;"></div> 
+    <div id="chartCases" style="width: 900px; height: 500px;"></div>--> 
+
+    <div id="chartDeath" class="chart"></div> 
+    <div id="chartCases" class="chart"></div> 
+
+  </body>
+</html>
